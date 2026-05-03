@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoDoc — Sécurisées</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Special+Elite&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════════════════════ -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">ENC</div>
+    Crypto<span>Doc</span>
+  </div>
+  <div class="nav-badge">Seydina/UCAK/IT/ASR</div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-tag">Chiffrement côté client — aucun fichier transmis au serveur</div>
+  <h1>Protégez vos<br><span>documents</span></h1>
+  <p class="hero-sub">
+    Chiffrez thèses, rapports et données sensibles avec des algorithmes
+    cryptographiques standards. 100 % privé.
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SÉLECTEUR D'ALGORITHME
+════════════════════════════════════════════════════════════ -->
+<div class="algo-bar">
+  <button class="algo-btn active" data-algo="AES-GCM" onclick="selectAlgo(this)">
+    AES-GCM <span class="tag">Recommandé</span>
+  </button>
+  <button class="algo-btn" data-algo="AES-CBC" onclick="selectAlgo(this)">AES-CBC</button>
+  <button class="algo-btn" data-algo="RSA-OAEP" onclick="selectAlgo(this)">
+    RSA-OAEP <span class="tag">Asymétrique</span>
+  </button>
+  <button class="algo-btn" data-algo="CHACHA" onclick="selectAlgo(this)">
+    ChaCha20 <span class="tag">AEAD</span>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     CARTE PRINCIPALE
+════════════════════════════════════════════════════════════ -->
+<div class="main-card">
+
+  <!-- Info algorithme -->
+  <div class="algo-info" id="algoInfo">
+    <strong>AES-GCM · Advanced Encryption Standard (Galois/Counter Mode)</strong><br>
+    Chiffrement symétrique 256 bits avec authentification intégrée (AEAD). Détecte toute
+    modification du fichier. Standard recommandé par le NIST. Clé partagée nécessaire pour le déchiffrement.
+  </div>
+
+  <div class="card">
+
+    <!-- Onglets -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('encrypt')">▲ Chiffrer</button>
+      <button class="tab"        onclick="switchTab('decrypt')">▼ Déchiffrer</button>
+      <button class="tab"        onclick="switchTab('text')">✎ Texte</button>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────
+         ONGLET 1 : CHIFFRER UN FICHIER
+    ────────────────────────────────────────────────── -->
+    <div class="tab-panel active" id="panel-encrypt">
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <div class="dropzone-icon">☐</div>
+        <div class="dropzone-title">Déposer un fichier ici</div>
+        <div class="dropzone-sub">PDF · DOCX · TXT · Images &nbsp;|&nbsp; Max 50 Mo</div>
+      </div>
+      <input type="file" id="fileInput" onchange="handleFile(this.files[0])">
+
+      <div class="file-info" id="fileInfo">
+        <div class="file-icon" id="fileIcon">☐</div>
+        <div>
+          <div class="file-name" id="fileName">—</div>
+          <div class="file-size" id="fileSize">—</div>
+        </div>
+        <button class="remove-btn" onclick="removeFile()">✕ Retirer</button>
+      </div>
+
+      <div class="field-label">
+        Clé de chiffrement <span class="required">*</span>
+      </div>
+      <div class="key-wrapper">
+        <input
+          type="password"
+          class="key-input"
+          id="encKey"
+          placeholder="Entrez une clé secrète forte..."
+          oninput="checkStrength(this.value, 'enc')"
+        >
+        <button class="key-toggle" onclick="toggleKey('encKey')">◉</button>
+      </div>
+      <div class="strength-bar">
+        <div class="strength-fill" id="encStrength"></div>
+      </div>
+      <div class="strength-label" id="encStrengthLabel">—</div>
+      <button class="gen-btn" onclick="generateKey('encKey')">
+        ⚡ Générer une clé aléatoire sécurisée
+      </button>
+
+      <br><br>
+
+      <div class="progress-wrap" id="encProgress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="encProgressFill"></div>
+        </div>
+        <div class="progress-label" id="encProgressLabel">Chiffrement en cours...</div>
+      </div>
+
+      <button class="action-btn" id="encBtn" onclick="encryptFile()">
+        ⬡ Chiffrer le document
+      </button>
+
+      <div class="result-box" id="encResult">
+        <div class="result-header success">
+          <div class="result-title success">✓ Fichier chiffré avec succès</div>
+        </div>
+        <div class="result-body">
+          <div class="result-meta" id="encMeta"></div>
+          <a class="download-btn" id="encDownload">▼ Télécharger le fichier chiffré (.enc)</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────
+         ONGLET 2 : DÉCHIFFRER UN FICHIER
+    ────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-decrypt">
+
+      <div class="dropzone" id="dropzone2" onclick="document.getElementById('fileInput2').click()">
+        <div class="dropzone-icon">☒</div>
+        <div class="dropzone-title">Déposer le fichier chiffré (.enc)</div>
+        <div class="dropzone-sub">Fichier généré par CryptoDoc</div>
+      </div>
+      <input type="file" id="fileInput2" accept=".enc,application/octet-stream" onchange="handleFile2(this.files[0])">
+
+      <div class="file-info" id="fileInfo2">
+        <div class="file-icon">☒</div>
+        <div>
+          <div class="file-name" id="fileName2">—</div>
+          <div class="file-size" id="fileSize2">—</div>
+        </div>
+        <button class="remove-btn" onclick="removeFile2()">✕ Retirer</button>
+      </div>
+
+      <div class="field-label">
+        Clé de déchiffrement <span class="required">*</span>
+      </div>
+      <div class="key-wrapper">
+        <input
+          type="password"
+          class="key-input"
+          id="decKey"
+          placeholder="Entrez la clé utilisée au chiffrement..."
+        >
+        <button class="key-toggle" onclick="toggleKey('decKey')">◉</button>
+      </div>
+      <br>
+
+      <div class="progress-wrap" id="decProgress">
+        <div class="progress-bar">
+          <div class="progress-fill" id="decProgressFill"></div>
+        </div>
+        <div class="progress-label" id="decProgressLabel">Déchiffrement en cours...</div>
+      </div>
+
+      <button class="action-btn" id="decBtn" onclick="decryptFile()">
+        ⬡ Déchiffrer le document
+      </button>
+
+      <div class="result-box" id="decResult"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────
+         ONGLET 3 : CHIFFREMENT DE TEXTE
+    ────────────────────────────────────────────────── -->
+    <div class="tab-panel" id="panel-text">
+
+      <div class="field-label">Texte à chiffrer</div>
+      <textarea
+        class="text-area"
+        id="textInput"
+        placeholder="Notes de cours, données sensibles, mots de passe..."
+      ></textarea>
+
+      <div class="field-label">Clé <span class="required">*</span></div>
+      <div class="key-wrapper">
+        <input
+          type="password"
+          class="key-input"
+          id="textKey"
+          placeholder="Clé secrète..."
+          oninput="checkStrength(this.value, 'txt')"
+        >
+        <button class="key-toggle" onclick="toggleKey('textKey')">◉</button>
+      </div>
+      <div class="strength-bar">
+        <div class="strength-fill" id="txtStrength"></div>
+      </div>
+      <div class="strength-label" id="txtStrengthLabel">—</div>
+      <button class="gen-btn" onclick="generateKey('textKey')">
+        ⚡ Générer une clé aléatoire
+      </button>
+
+      <br><br>
+
+      <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button class="action-btn" onclick="encryptText()" style="flex:1;">
+          ▲ Chiffrer
+        </button>
+        <button
+          class="action-btn"
+          onclick="decryptText()"
+          style="flex:1; background:var(--paper2); border:1px solid var(--ink); color:var(--ink);"
+        >
+          ▼ Déchiffrer
+        </button>
+      </div>
+
+      <div id="textResult" style="display:none;">
+        <div class="field-label">Résultat</div>
+        <div class="output-text" id="textOutput"></div>
+        <button class="copy-btn" onclick="copyResult()">Copier</button>
+      </div>
+    </div>
+
+  </div><!-- /.card -->
+</div><!-- /.main-card -->
+
+<!-- ═══════════════════════════════════════════════════════
+     STATISTIQUES
+════════════════════════════════════════════════════════════ -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-val" id="statFiles">0</div>
+    <div class="stat-label">Fichiers traités</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="statSize">0 B</div>
+    <div class="stat-label">Données chiffrées</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">256 bits</div>
+    <div class="stat-label">Taille de clé AES</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">0</div>
+    <div class="stat-label">Données transmises</div>
+  </div>
+</div>
+
+<script src="crypto.js"></script>
+</body>
+</html>
